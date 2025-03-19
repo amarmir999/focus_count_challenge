@@ -145,32 +145,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 180px; /* Increased from 100px to accommodate larger fingers */
-            height: 180px; /* Increased from 120px */
+            /* Removed fixed width - will be set dynamically */
+            height: 220px;
             transition: opacity 0.3s ease;
             opacity: 0;
         }
         
         .finger {
-            width: 25px; /* Increased from 15px */
-            height: 90px; /* Increased from 60px */
+            width: 65px;
+            height: 250px;
             background-color: var(--secondary-color);
-            border-radius: 12px; /* Increased from 8px */
-            margin: 0 5px; /* Increased from 3px for better spacing */
+            border-radius: 15px;
+            margin: 0 15px; /* Spacing between fingers */
             position: relative;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Added shadow for better definition */
-        }
-        
-        .finger::before {
-            content: '';
-            position: absolute;
-            top: -12px; /* Adjusted from -8px */
-            left: 0;
-            width: 25px; /* Increased from 15px to match finger width */
-            height: 25px; /* Increased from 15px */
-            background-color: var(--secondary-color);
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
         }
         
         .input-container {
@@ -612,6 +600,13 @@
             
             <div class="settings-group">
                 <label class="settings-label">
+                    Finger Position: <span class="settings-value" id="position-value">Both</span>
+                </label>
+                <input type="range" class="settings-range" id="position-setting" min="0" max="2" step="1" value="2">
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">
                     Fixation Point: <span class="settings-value" id="anchor-value">Regular</span>
                 </label>
                 <input type="range" class="settings-range" id="anchor-setting" min="0" max="1" step="1" value="0">
@@ -675,6 +670,7 @@
                 feedbackDuration: 1500, // how long feedback is displayed
                 distractionLevel: 1, // 0: none, 1: medium, 2: high
                 fingerDistance: 1, // 0: close, 1: medium, 2: far
+                fingerPosition: 2, // 0: left only, 1: right only, 2: both (random)
                 visualAnchorType: 0, // 0: regular dot, 1: bullseye
                 soundEnabled: true // Whether sound effects are enabled
             };
@@ -713,11 +709,13 @@
             const durationSetting = document.getElementById('duration-setting');
             const distractionSetting = document.getElementById('distraction-setting');
             const distanceSetting = document.getElementById('distance-setting');
+            const positionSetting = document.getElementById('position-setting');
             const anchorSetting = document.getElementById('anchor-setting');
             const soundSetting = document.getElementById('sound-setting');
             const durationValue = document.getElementById('duration-value');
             const distractionValue = document.getElementById('distraction-value');
             const distanceValue = document.getElementById('distance-value');
+            const positionValue = document.getElementById('position-value');
             const anchorValue = document.getElementById('anchor-value');
             
             // Sound functions
@@ -788,6 +786,7 @@
                 settings.stimulusDuration = parseInt(durationSetting.value);
                 settings.distractionLevel = parseInt(distractionSetting.value);
                 settings.fingerDistance = parseInt(distanceSetting.value);
+                settings.fingerPosition = parseInt(positionSetting.value);
                 settings.visualAnchorType = parseInt(anchorSetting.value);
                 settings.soundEnabled = soundSetting.checked;
                 
@@ -835,6 +834,11 @@
             distanceSetting.addEventListener('input', function() {
                 const levels = ['Close', 'Medium', 'Far'];
                 distanceValue.textContent = levels[this.value];
+            });
+            
+            positionSetting.addEventListener('input', function() {
+                const positions = ['Left Only', 'Right Only', 'Both'];
+                positionValue.textContent = positions[this.value];
             });
             
             anchorSetting.addEventListener('input', function() {
@@ -959,15 +963,37 @@
                 // Increase round counter
                 gameState.currentRound++;
                 
-                // Determine which side to show fingers (left, right, or both for higher levels)
-                let showBoth = false;
-                if (gameState.level >= 3) {
-                    showBoth = Math.random() > 0.5;
+                // Determine which side to show fingers based on the fingerPosition setting
+                let showLeft = false;
+                let showRight = false;
+                
+                switch(settings.fingerPosition) {
+                    case 0: // Left Only
+                        showLeft = true;
+                        showRight = false;
+                        break;
+                    case 1: // Right Only
+                        showLeft = false;
+                        showRight = true;
+                        break;
+                    case 2: // Both (random)
+                        // For higher levels, we may show both sides simultaneously
+                        let showBoth = gameState.level >= 3 && Math.random() > 0.5;
+                        
+                        if (showBoth) {
+                            showLeft = true;
+                            showRight = true;
+                        } else {
+                            // Show one side at random
+                            showLeft = Math.random() < 0.5;
+                            showRight = !showLeft;
+                        }
+                        break;
                 }
                 
-                // Generate random finger counts for each side
-                currentRoundData.leftCount = showBoth || Math.random() < 0.5 ? getRandomInt(settings.minFingers, settings.maxFingers) : 0;
-                currentRoundData.rightCount = showBoth || (currentRoundData.leftCount === 0) ? getRandomInt(settings.minFingers, settings.maxFingers) : 0;
+                // Generate random finger counts for each side based on which sides are showing
+                currentRoundData.leftCount = showLeft ? getRandomInt(settings.minFingers, settings.maxFingers) : 0;
+                currentRoundData.rightCount = showRight ? getRandomInt(settings.minFingers, settings.maxFingers) : 0;
                 currentRoundData.totalCount = currentRoundData.leftCount + currentRoundData.rightCount;
                 
                 // Create finger elements
@@ -1101,6 +1127,21 @@
             // Create finger elements
             function createFingers(container, count) {
                 container.innerHTML = '';
+                
+                // Calculate the width needed for the container based on finger count
+                // Each finger is 65px wide with 30px total margin (15px on each side)
+                const totalWidth = count * (65 + 30);
+                container.style.width = totalWidth + 'px';
+                
+                // Adjust container position based on which side it's on
+                if (container.id === 'left-fingers') {
+                    // For left fingers, we need to adjust the transform to properly position the container
+                    container.style.transform = 'translateX(-25%)';
+                } else if (container.id === 'right-fingers') {
+                    // For right fingers, we need to adjust the transform to properly position the container
+                    container.style.transform = 'translateX(25%)';
+                }
+                
                 for (let i = 0; i < count; i++) {
                     const finger = document.createElement('div');
                     finger.className = 'finger';
@@ -1321,6 +1362,9 @@
                 
                 const distanceLevels = ['Close', 'Medium', 'Far'];
                 distanceValue.textContent = distanceLevels[settings.fingerDistance];
+                
+                const positionOptions = ['Left Only', 'Right Only', 'Both'];
+                positionValue.textContent = positionOptions[settings.fingerPosition];
                 
                 const anchorTypes = ['Regular', 'Visual Anchor'];
                 anchorValue.textContent = anchorTypes[settings.visualAnchorType];
