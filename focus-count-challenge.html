@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Count Challenge</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6f9eeb;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1900px;
+            height: 700px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1900px;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1900px;
+            margin-bottom: 15px;
+        }
+        
+        .stat {
+            background-color: white;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            margin: 0 5px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .fixation-point {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(74, 111, 165, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        /* Visual Anchor - Bullseye Pattern */
+        .fixation-point.visual-anchor {
+            background-color: transparent;
+            width: 30px;
+            height: 30px;
+            box-shadow: none;
+        }
+        
+        .fixation-point.visual-anchor::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--primary-color);
+            border-radius: 50%;
+        }
+        
+        .fixation-point.visual-anchor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(111, 158, 235, 0.7);
+        }
+        
+        .finger-container {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 120px;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        
+        .finger {
+            width: 15px;
+            height: 60px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            margin: 0 3px;
+            position: relative;
+        }
+        
+        .finger::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+        }
+        
+        .input-container {
+            position: absolute;
+            bottom: 50px; /* Increased from 30px for more space at bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 800px; /* Increased from 500px */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .prompt {
+            font-size: 32px; /* Increased from 18px */
+            margin-bottom: 25px; /* Increased from 15px */
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px; /* Increased from 10px */
+            margin-bottom: 25px; /* Increased from 15px */
+            max-width: 600px; /* Increased from 350px */
+        }
+        
+        .number-button {
+            width: 70px; /* Increased from 45px */
+            height: 70px; /* Increased from 45px */
+            border-radius: 50%;
+            border: none;
+            background-color: white;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+            font-size: 28px; /* Increased from 18px */
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px; /* Increased from 5px */
+        }
+        
+        .number-button:hover {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-4px); /* Increased from -2px */
+            box-shadow: 0 5px 15px rgba(111, 158, 235, 0.4);
+        }
+        
+        .feedback {
+            position: absolute;
+            top: 30%; /* Changed from 50% to 30% to position above the fixation point */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+            text-align: center;
+            padding: 15px 30px;
+            border-radius: var(--border-radius);
+        }
+        
+        .correct {
+            color: var(--success-color);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .incorrect {
+            color: var(--error-color);
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        .game-start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 100;
+        }
+        
+        .start-button, .next-level-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+        }
+        
+        .start-button:hover, .next-level-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .instructions {
+            max-width: 80%;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .instruction-highlight {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .level-indicator {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .progress-container {
+            width: 100%;
+            max-width: 1900px;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .achievement {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0;
+            z-index: 50;
+            transition: all 0.5s ease;
+        }
+        
+        .achievement.show {
+            opacity: 1;
+            animation: slideDown 0.5s ease forwards, fadeOut 0.5s ease 3s forwards;
+        }
+        
+        @keyframes slideDown {
+            from { top: -50px; }
+            to { top: 20px; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .distraction {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(150, 150, 150, 0.8); /* Darker base color and higher opacity */
+            z-index: 9; /* Increased z-index to be above most elements but below fixation point */
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.5s ease;
+            pointer-events: none; /* Prevent interactions with distractions */
+        }
+        
+        .distraction-medium {
+            background-color: rgba(130, 130, 220, 0.85);
+            box-shadow: 0 0 12px rgba(100, 100, 200, 0.7);
+        }
+        
+        .distraction-high {
+            background: linear-gradient(45deg, rgba(255,50,50,0.9), rgba(50,120,255,0.9));
+            box-shadow: 0 0 20px rgba(150,100,200,0.9);
+            animation: pulse 1.5s infinite alternate, wiggle 3s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            25% { transform: translateX(-8px) rotate(-5deg); }
+            75% { transform: translateX(8px) rotate(5deg); }
+        }
+        
+        .settings-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .settings-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .settings-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .settings-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .settings-group {
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 15px;
+        }
+        
+        .settings-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .settings-range {
+            width: 100%;
+        }
+        
+        .close-settings {
+            margin-top: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+        
+        .settings-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">Focus Count Challenge</h1>
+        <p class="subtitle">Keep your eyes on the center dot. Count the fingers that appear.</p>
+    </div>
+    
+    <div class="stats-container">
+        <div class="stat">
+            <div class="stat-label">LEVEL</div>
+            <div class="stat-value" id="level-display">1</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">SCORE</div>
+            <div class="stat-value" id="score-display">0</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">ACCURACY</div>
+            <div class="stat-value" id="accuracy-display">0%</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">STREAK</div>
+            <div class="stat-value" id="streak-display">0</div>
+        </div>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-bar" id="level-progress"></div>
+    </div>
+    
+    <div class="game-container" id="game-container">
+        <div class="level-indicator" id="current-level">Level 1</div>
+        <div class="fixation-point" id="fixation-point"></div>
+        
+        <div class="finger-container" id="left-fingers" style="top: 40%; left: 20%; transform: translateX(-50%);">
+            <!-- Fingers will be added dynamically -->
+        </div>
+        
+        <div class="finger-container" id="right-fingers" style="top: 40%; right: 20%; transform: translateX(50%);">
+            <!-- Fingers will be added dynamically -->
+        </div>
+        
+        <div class="input-container" id="input-container">
+            <div class="prompt">How many fingers did you see?</div>
+            <div class="button-group">
+                <button class="number-button" data-value="1">1</button>
+                <button class="number-button" data-value="2">2</button>
+                <button class="number-button" data-value="3">3</button>
+                <button class="number-button" data-value="4">4</button>
+                <button class="number-button" data-value="5">5</button>
+                <button class="number-button" data-value="6">6</button>
+                <button class="number-button" data-value="7">7</button>
+                <button class="number-button" data-value="8">8</button>
+                <button class="number-button" data-value="9">9</button>
+                <button class="number-button" data-value="10">10</button>
+            </div>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="achievement" id="achievement"></div>
+        
+        <div class="game-start-screen" id="start-screen">
+            <h2>Welcome to Focus Count Challenge</h2>
+            <div class="instructions">
+                <p>This game helps improve your visual fixation and peripheral awareness.</p>
+                <p>Keep your eyes focused on the <span class="instruction-highlight">central dot</span> at all times.</p>
+                <p>Count the fingers that briefly appear on the left or right side.</p>
+                <p>In higher levels, fingers may appear on both sides simultaneously (up to 10 total).</p>
+                <p>Enter the correct number to score points and advance.</p>
+            </div>
+            <button class="start-button" id="start-button">Start Game</button>
+        </div>
+        
+        <div class="game-start-screen" id="level-complete-screen" style="display: none;">
+            <h2>Level Complete!</h2>
+            <div class="instructions">
+                <p>Great job! You've completed Level <span id="completed-level">1</span>.</p>
+                <p>The next level will be slightly more challenging.</p>
+                <p>Remember to keep your eyes on the center dot at all times.</p>
+            </div>
+            <button class="next-level-button" id="next-level-button">Continue to Next Level</button>
+        </div>
+        
+        <button class="settings-button" id="settings-button">⚙️</button>
+        
+        <div class="settings-modal" id="settings-modal">
+            <h2 class="settings-title">Game Settings</h2>
+            
+            <div class="settings-group">
+                <label class="settings-label">
+                    Stimulus Duration: <span class="settings-value" id="duration-value">600</span>ms
+                </label>
+                <input type="range" class="settings-range" id="duration-setting" min="300" max="1000" step="50" value="600">
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">
+                    Distractions: <span class="settings-value" id="distraction-value">Medium</span>
+                </label>
+                <input type="range" class="settings-range" id="distraction-setting" min="0" max="2" step="1" value="1">
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">
+                    Finger Distance: <span class="settings-value" id="distance-value">Medium</span>
+                </label>
+                <input type="range" class="settings-range" id="distance-setting" min="0" max="2" step="1" value="1">
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">
+                    Fixation Point: <span class="settings-value" id="anchor-value">Regular</span>
+                </label>
+                <input type="range" class="settings-range" id="anchor-setting" min="0" max="1" step="1" value="0">
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">
+                    Sound Effects: 
+                </label>
+                <div style="display: flex; align-items: center;">
+                    <input type="checkbox" id="sound-setting" checked>
+                    <label for="sound-setting" style="margin-left: 8px;">Enable sounds</label>
+                </div>
+            </div>
+            
+            <button class="close-settings" id="close-settings">Save Settings</button>
+        </div>
+        
+        <!-- Audio elements -->
+        <audio id="success-sound" preload="auto">
+            <source src="success.wav" type="audio/wav">
+        </audio>
+        <audio id="failure-sound" preload="auto">
+            <source src="failure.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="stimuli-sound" preload="auto">
+            <source src="stimuli.wav" type="audio/mpeg">
+        </audio>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game state
+            const gameState = {
+                level: 1,
+                score: 0,
+                totalAttempts: 0,
+                correctAttempts: 0,
+                streak: 0,
+                maxStreak: 0,
+                isPlaying: false,
+                roundsPerLevel: 5,
+                currentRound: 0,
+                settingsPaused: false,
+                currentPhase: 'waiting', // 'waiting', 'stimuli', 'input', 'feedback'
+                isFirstStart: true, // Flag to track first time loading the game
+                achievements: {
+                    streak3: false,
+                    streak5: false,
+                    perfect: false,
+                    levelUp: false
+                }
+            };
+            
+            // Game settings (can be adjusted by level or user preferences)
+            const settings = {
+                stimulusDuration: 600, // in milliseconds
+                minFingers: 1,
+                maxFingers: 5,
+                interStimulusInterval: 2000, // time between rounds in milliseconds
+                feedbackDuration: 1500, // how long feedback is displayed
+                distractionLevel: 1, // 0: none, 1: medium, 2: high
+                fingerDistance: 1, // 0: close, 1: medium, 2: far
+                visualAnchorType: 0, // 0: regular dot, 1: bullseye
+                soundEnabled: true // Whether sound effects are enabled
+            };
+            
+            // DOM Elements
+            const gameContainer = document.getElementById('game-container');
+            const fixationPoint = document.getElementById('fixation-point');
+            const leftFingers = document.getElementById('left-fingers');
+            const rightFingers = document.getElementById('right-fingers');
+            const inputContainer = document.getElementById('input-container');
+            const numberButtons = document.querySelectorAll('.number-button');
+            const feedback = document.getElementById('feedback');
+            const levelDisplay = document.getElementById('level-display');
+            const scoreDisplay = document.getElementById('score-display');
+            const accuracyDisplay = document.getElementById('accuracy-display');
+            const streakDisplay = document.getElementById('streak-display');
+            const startScreen = document.getElementById('start-screen');
+            const startButton = document.getElementById('start-button');
+            const levelCompleteScreen = document.getElementById('level-complete-screen');
+            const nextLevelButton = document.getElementById('next-level-button');
+            const completedLevelDisplay = document.getElementById('completed-level');
+            const currentLevelDisplay = document.getElementById('current-level');
+            const levelProgress = document.getElementById('level-progress');
+            const achievementDisplay = document.getElementById('achievement');
+            
+            // Audio elements
+            const successSound = document.getElementById('success-sound');
+            const failureSound = document.getElementById('failure-sound');
+            const stimuliSound = document.getElementById('stimuli-sound');
+            
+            // Settings elements
+            const settingsButton = document.getElementById('settings-button');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettings = document.getElementById('close-settings');
+            const durationSetting = document.getElementById('duration-setting');
+            const distractionSetting = document.getElementById('distraction-setting');
+            const distanceSetting = document.getElementById('distance-setting');
+            const anchorSetting = document.getElementById('anchor-setting');
+            const soundSetting = document.getElementById('sound-setting');
+            const durationValue = document.getElementById('duration-value');
+            const distractionValue = document.getElementById('distraction-value');
+            const distanceValue = document.getElementById('distance-value');
+            const anchorValue = document.getElementById('anchor-value');
+            
+            // Sound functions
+            function playSound(sound) {
+                if (settings.soundEnabled) {
+                    // Reset the audio to the beginning
+                    sound.currentTime = 0;
+                    // Play the sound
+                    sound.play().catch(e => {
+                        // Handle potential playback errors (common in some browsers)
+                        console.log("Audio playback failed:", e);
+                    });
+                }
+            }
+            
+            // Current round data
+            let currentRoundData = {
+                leftCount: 0,
+                rightCount: 0,
+                totalCount: 0,
+                position: 'left' // or 'right'
+            };
+            
+            // Start the game
+            startButton.addEventListener('click', function() {
+                startScreen.style.display = 'none';
+                gameState.isPlaying = true;
+                startNextRound();
+            });
+            
+            // Next level button
+            nextLevelButton.addEventListener('click', function() {
+                levelCompleteScreen.style.display = 'none';
+                gameState.level++;
+                gameState.currentRound = 0;
+                updateLevelSettings();
+                updateUI();
+                startNextRound();
+            });
+            
+            // Settings button
+            settingsButton.addEventListener('click', function() {
+                settingsModal.classList.add('show');
+                gameState.settingsPaused = true;
+                
+                // Store current game phase when settings are opened
+                if (inputContainer.style.opacity === '1') {
+                    gameState.currentPhase = 'input';
+                } else if (leftFingers.style.opacity === '1' || rightFingers.style.opacity === '1') {
+                    gameState.currentPhase = 'stimuli';
+                } else if (feedback.style.opacity === '1') {
+                    gameState.currentPhase = 'feedback';
+                } else {
+                    gameState.currentPhase = 'waiting';
+                }
+                
+                // Hide any active UI elements
+                inputContainer.style.opacity = '0';
+                leftFingers.style.opacity = '0';
+                rightFingers.style.opacity = '0';
+            });
+            
+            // Close settings
+            closeSettings.addEventListener('click', function() {
+                settingsModal.classList.remove('show');
+                
+                // Apply settings
+                settings.stimulusDuration = parseInt(durationSetting.value);
+                settings.distractionLevel = parseInt(distractionSetting.value);
+                settings.fingerDistance = parseInt(distanceSetting.value);
+                settings.visualAnchorType = parseInt(anchorSetting.value);
+                settings.soundEnabled = soundSetting.checked;
+                
+                // Update finger positions based on distance setting
+                updateFingerPositions();
+                
+                // Update fixation point appearance
+                updateFixationPointAppearance();
+                
+                // If this is the first time starting the game, show the start screen
+                if (gameState.isFirstStart) {
+                    gameState.isFirstStart = false;
+                    startScreen.style.display = 'flex';
+                    return;
+                }
+                
+                // Resume game from appropriate state
+                if (gameState.isPlaying) {
+                    if (gameState.currentPhase === 'input' || gameState.currentPhase === 'stimuli') {
+                        // Restart the current round to ensure fingers are shown
+                        // Decrement the round counter so it stays on the same round
+                        if (gameState.currentRound > 0) {
+                            gameState.currentRound--;
+                        }
+                        startNextRound();
+                    } else if (gameState.currentPhase === 'feedback') {
+                        // Let the feedback timer complete
+                    } else {
+                        // If in waiting phase, we can continue as normal
+                    }
+                }
+                gameState.settingsPaused = false;
+            });
+            
+            // Update settings display
+            durationSetting.addEventListener('input', function() {
+                durationValue.textContent = this.value;
+            });
+            
+            distractionSetting.addEventListener('input', function() {
+                const levels = ['Low', 'Medium', 'High'];
+                distractionValue.textContent = levels[this.value];
+            });
+            
+            distanceSetting.addEventListener('input', function() {
+                const levels = ['Close', 'Medium', 'Far'];
+                distanceValue.textContent = levels[this.value];
+            });
+            
+            anchorSetting.addEventListener('input', function() {
+                const types = ['Regular', 'Visual Anchor'];
+                anchorValue.textContent = types[this.value];
+            });
+            
+            // Register input buttons
+            numberButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const userInput = parseInt(this.getAttribute('data-value'));
+                    processUserInput(userInput);
+                });
+            });
+            
+            // Also allow keyboard input (1-10)
+            document.addEventListener('keydown', function(event) {
+                if (!gameState.isPlaying) return;
+                
+                const key = event.key;
+                // Support numbers 1-9 directly
+                if (/^[1-9]$/.test(key) && inputContainer.style.opacity === '1') {
+                    const userInput = parseInt(key);
+                    processUserInput(userInput);
+                }
+                // Support number 10 (when user presses '0' key)
+                else if (key === '0' && inputContainer.style.opacity === '1') {
+                    processUserInput(10);
+                }
+            });
+            
+            // Start a new round
+            function startNextRound() {
+                if (gameState.currentRound >= gameState.roundsPerLevel) {
+                    // Level complete
+                    completedLevelDisplay.textContent = gameState.level;
+                    levelCompleteScreen.style.display = 'flex';
+                    showAchievement('Level ' + gameState.level + ' Complete!');
+                    gameState.currentPhase = 'waiting';
+                    return;
+                }
+                
+                // Update progress bar
+                updateProgressBar();
+                
+                // Clear previous fingers
+                leftFingers.innerHTML = '';
+                rightFingers.innerHTML = '';
+                leftFingers.style.opacity = 0;
+                rightFingers.style.opacity = 0;
+                
+                // Hide input container and feedback
+                inputContainer.style.opacity = 0;
+                feedback.style.opacity = 0;
+                
+                // Remove previous distractions
+                removeDistractions();
+                
+                gameState.currentPhase = 'waiting';
+                
+                // Prepare next round after a delay
+                setTimeout(function() {
+                    prepareRound();
+                }, 1000);
+            }
+            
+            // Prepare the round data and display
+            function prepareRound() {
+                // Increase round counter
+                gameState.currentRound++;
+                
+                // Determine which side to show fingers (left, right, or both for higher levels)
+                let showBoth = false;
+                if (gameState.level >= 3) {
+                    showBoth = Math.random() > 0.5;
+                }
+                
+                // Generate random finger counts for each side
+                currentRoundData.leftCount = showBoth || Math.random() < 0.5 ? getRandomInt(settings.minFingers, settings.maxFingers) : 0;
+                currentRoundData.rightCount = showBoth || (currentRoundData.leftCount === 0) ? getRandomInt(settings.minFingers, settings.maxFingers) : 0;
+                currentRoundData.totalCount = currentRoundData.leftCount + currentRoundData.rightCount;
+                
+                // Create finger elements
+                if (currentRoundData.leftCount > 0) {
+                    createFingers(leftFingers, currentRoundData.leftCount);
+                }
+                
+                if (currentRoundData.rightCount > 0) {
+                    createFingers(rightFingers, currentRoundData.rightCount);
+                }
+                
+                // Add distractions based on level and settings
+                if (settings.distractionLevel > 0 && gameState.level > 1) {
+                    addDistractions();
+                }
+                
+                // Display stimuli after a short fixation period
+                setTimeout(function() {
+                    // Show finger containers
+                    if (currentRoundData.leftCount > 0) {
+                        leftFingers.style.opacity = 1;
+                    }
+                    
+                    if (currentRoundData.rightCount > 0) {
+                        rightFingers.style.opacity = 1;
+                    }
+                    
+                    gameState.currentPhase = 'stimuli';
+                    
+                    // Play stimuli sound when fingers appear
+                    playSound(stimuliSound);
+                    
+                    // Pulse the fixation point to encourage focus, adapting for both styles
+                    if (settings.visualAnchorType === 1) {
+                        // For visual anchor, scale the whole element
+                        fixationPoint.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                        setTimeout(() => {
+                            fixationPoint.style.transform = 'translate(-50%, -50%)';
+                        }, 150);
+                    } else {
+                        // For regular dot, use the existing animation
+                        fixationPoint.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                        setTimeout(() => {
+                            fixationPoint.style.transform = 'translate(-50%, -50%) scale(1)';
+                        }, 150);
+                    }
+                    
+                    // Hide stimuli after duration
+                    setTimeout(function() {
+                        leftFingers.style.opacity = 0;
+                        rightFingers.style.opacity = 0;
+                        
+                        // Show input container after stimuli disappear
+                        setTimeout(function() {
+                            if (!gameState.settingsPaused) {
+                                inputContainer.style.opacity = 1;
+                                gameState.currentPhase = 'input';
+                            }
+                        }, 300);
+                    }, settings.stimulusDuration);
+                }, 500);
+            }
+            
+            // Process user input
+            function processUserInput(userInput) {
+                // Hide input container
+                inputContainer.style.opacity = 0;
+                
+                gameState.currentPhase = 'feedback';
+                
+                // Check if answer is correct
+                const isCorrect = userInput === currentRoundData.totalCount;
+                
+                // Update game state
+                gameState.totalAttempts++;
+                if (isCorrect) {
+                    gameState.correctAttempts++;
+                    gameState.score += calculateScore();
+                    gameState.streak++;
+                    
+                    if (gameState.streak > gameState.maxStreak) {
+                        gameState.maxStreak = gameState.streak;
+                    }
+                    
+                    // Check for streak achievements
+                    checkForAchievements();
+                } else {
+                    gameState.streak = 0;
+                }
+                
+                // Show feedback
+                showFeedback(isCorrect);
+                
+                // Update UI
+                updateUI();
+                
+                // Start next round after delay
+                setTimeout(function() {
+                    if (!gameState.settingsPaused) {
+                        startNextRound();
+                    }
+                }, settings.feedbackDuration);
+            }
+            
+            // Show feedback based on correctness
+            function showFeedback(isCorrect) {
+                feedback.textContent = isCorrect ? 
+                    "Correct! " + currentRoundData.totalCount + " fingers." : 
+                    "Incorrect. There were " + currentRoundData.totalCount + " fingers.";
+                
+                feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+                
+                // Play appropriate sound
+                if (isCorrect) {
+                    playSound(successSound);
+                } else {
+                    playSound(failureSound);
+                }
+                
+                // Use a fixed scale instead of variable scale based on settings
+                const scale = 1.2; // Medium scale as default
+                
+                feedback.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                feedback.style.opacity = 1;
+                
+                setTimeout(() => {
+                    feedback.style.transform = "translate(-50%, -50%) scale(1)";
+                }, 300);
+            }
+            
+            // Create finger elements
+            function createFingers(container, count) {
+                container.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const finger = document.createElement('div');
+                    finger.className = 'finger';
+                    container.appendChild(finger);
+                }
+            }
+            
+            // Update UI elements
+            function updateUI() {
+                levelDisplay.textContent = gameState.level;
+                scoreDisplay.textContent = gameState.score;
+                
+                const accuracy = gameState.totalAttempts > 0 ? 
+                    Math.round((gameState.correctAttempts / gameState.totalAttempts) * 100) : 0;
+                accuracyDisplay.textContent = accuracy + '%';
+                
+                streakDisplay.textContent = gameState.streak;
+                currentLevelDisplay.textContent = 'Level ' + gameState.level;
+            }
+            
+            // Update progress bar
+            function updateProgressBar() {
+                const progressPercent = (gameState.currentRound / gameState.roundsPerLevel) * 100;
+                levelProgress.style.width = progressPercent + '%';
+            }
+            
+            // Update settings based on current level
+            function updateLevelSettings() {
+                // Adjust difficulty by level
+                // This could be fine-tuned for therapeutic progression
+                settings.stimulusDuration = Math.max(300, 700 - (gameState.level * 50));
+                settings.interStimulusInterval = Math.max(1500, 2000 - (gameState.level * 100));
+                
+                // Update rounds per level for higher levels
+                if (gameState.level > 3) {
+                    gameState.roundsPerLevel = 8;
+                }
+                
+                // Update UI to reflect new settings
+                durationSetting.value = settings.stimulusDuration;
+                durationValue.textContent = settings.stimulusDuration;
+            }
+            
+            // Calculate score based on level and streak
+            function calculateScore() {
+                let baseScore = 10;
+                let levelMultiplier = gameState.level;
+                let streakBonus = Math.min(5, gameState.streak);
+                
+                return baseScore * levelMultiplier + streakBonus;
+            }
+            
+            // Check for achievements
+            function checkForAchievements() {
+                if (gameState.streak === 3 && !gameState.achievements.streak3) {
+                    gameState.achievements.streak3 = true;
+                    showAchievement('Achievement: 3 Correct in a Row!');
+                }
+                
+                if (gameState.streak === 5 && !gameState.achievements.streak5) {
+                    gameState.achievements.streak5 = true;
+                    showAchievement('Achievement: 5 Correct in a Row!');
+                }
+                
+                // Perfect round achievement - checked at end of level
+                if (gameState.currentRound === gameState.roundsPerLevel && 
+                    gameState.correctAttempts === gameState.totalAttempts &&
+                    !gameState.achievements.perfect) {
+                    gameState.achievements.perfect = true;
+                    showAchievement('Achievement: Perfect Round!');
+                }
+            }
+            
+            // Show achievement notification
+            function showAchievement(message) {
+                achievementDisplay.textContent = message;
+                achievementDisplay.classList.add('show');
+                
+                // Play success sound for achievements
+                playSound(successSound);
+                
+                setTimeout(() => {
+                    achievementDisplay.classList.remove('show');
+                }, 3500);
+            }
+            
+            // Add visual distractions
+            function addDistractions() {
+                if (settings.distractionLevel === 0 || gameState.level === 1) return;
+                
+                console.log("Adding distractions: Level " + settings.distractionLevel);
+                
+                // Number of distractions based on level and settings
+                const distractionCount = settings.distractionLevel * gameState.level * 3; // Increased multiplier
+                const maxDistractions = Math.min(20, distractionCount); // Increased cap for better visibility
+                
+                console.log(`Creating ${maxDistractions} distractions`);
+                
+                // Add distractions directly to game container
+                for (let i = 0; i < maxDistractions; i++) {
+                    const distraction = document.createElement('div');
+                    distraction.className = 'distraction';
+                    distraction.id = `distraction-${i}`;
+                    
+                    // Apply different classes based on distraction level
+                    if (settings.distractionLevel === 2) {
+                        distraction.classList.add('distraction-high');
+                    } else if (settings.distractionLevel === 1) {
+                        distraction.classList.add('distraction-medium');
+                    }
+                    
+                    // Place distractions throughout the game container
+                    // Avoid extreme edges
+                    let left = getRandomInt(10, 90);
+                    let top = getRandomInt(10, 90);
+                    
+                    // Ensure no overlap with fixation point
+                    const centerDistance = Math.sqrt(
+                        Math.pow(left - 50, 2) + 
+                        Math.pow(top - 50, 2)
+                    );
+                    
+                    if (centerDistance < 15) {
+                        // Reposition if too close to center
+                        left = left < 50 ? left - 15 : left + 15;
+                        top = top < 50 ? top - 15 : top + 15;
+                    }
+                    
+                    distraction.style.left = left + '%';
+                    distraction.style.top = top + '%';
+                    
+                    // Larger size for visibility
+                    const baseSize = settings.distractionLevel === 2 ? 30 : 20;
+                    const size = getRandomInt(baseSize, baseSize + 30);
+                    distraction.style.width = size + 'px';
+                    distraction.style.height = size + 'px';
+                    
+                    // Add to game container
+                    gameContainer.appendChild(distraction);
+                    
+                    // Show the distraction immediately or with a small delay
+                    const delay = Math.random() * 500; // Random delay up to 500ms
+                    setTimeout(() => {
+                        // High opacity for better visibility
+                        const baseOpacity = settings.distractionLevel === 2 ? 0.9 : 0.7;
+                        distraction.style.opacity = baseOpacity.toString();
+                        
+                        // For high distraction level, add movement
+                        if (settings.distractionLevel === 2) {
+                            // Simple animation to further distract
+                            setTimeout(() => {
+                                const newLeft = getRandomInt(Math.max(10, left - 15), Math.min(90, left + 15));
+                                const newTop = getRandomInt(Math.max(10, top - 15), Math.min(90, top + 15));
+                                distraction.style.transition = 'left 1s ease, top 1s ease';
+                                distraction.style.left = newLeft + '%';
+                                distraction.style.top = newTop + '%';
+                            }, getRandomInt(300, 1500));
+                        }
+                    }, delay);
+                }
+                
+                // For debugging, check if distractions were created
+                setTimeout(() => {
+                    const distractions = document.querySelectorAll('.distraction');
+                    console.log(`Number of distractions in DOM: ${distractions.length}`);
+                }, 1000);
+            }
+            
+            // Remove all distractions
+            function removeDistractions() {
+                const distractions = document.querySelectorAll('.distraction');
+                console.log(`Removing ${distractions.length} distractions`);
+                distractions.forEach(distraction => {
+                    distraction.remove();
+                });
+            }
+            
+            // Helper: Get random integer between min and max (inclusive)
+            function getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            
+            // Function to update finger positions based on distance setting
+            function updateFingerPositions() {
+                // Define position percentages for each distance setting
+                const distancePositions = [
+                    { left: 30, right: 70 },  // Close: 30% and 70% from left
+                    { left: 20, right: 80 },  // Medium: 20% and 80% from left
+                    { left: 10, right: 90 }   // Far: 10% and 90% from left
+                ];
+                
+                const position = distancePositions[settings.fingerDistance];
+                
+                // Apply new positions to finger containers
+                leftFingers.style.left = position.left + '%';
+                rightFingers.style.right = (100 - position.right) + '%';
+            }
+            
+            // Function to update the fixation point appearance based on settings
+            function updateFixationPointAppearance() {
+                if (settings.visualAnchorType === 1) {
+                    fixationPoint.classList.add('visual-anchor');
+                } else {
+                    fixationPoint.classList.remove('visual-anchor');
+                }
+            }
+            
+            // Initialize finger positions
+            function initializeGame() {
+                // Set initial positions for finger containers
+                updateFingerPositions();
+                
+                // Set initial values for settings
+                durationValue.textContent = settings.stimulusDuration;
+                
+                const distractionLevels = ['Low', 'Medium', 'High'];
+                distractionValue.textContent = distractionLevels[settings.distractionLevel];
+                
+                const distanceLevels = ['Close', 'Medium', 'Far'];
+                distanceValue.textContent = distanceLevels[settings.fingerDistance];
+                
+                const anchorTypes = ['Regular', 'Visual Anchor'];
+                anchorValue.textContent = anchorTypes[settings.visualAnchorType];
+                
+                // Apply visual anchor setting
+                updateFixationPointAppearance();
+                
+                // Show settings on first load instead of start screen
+                if (gameState.isFirstStart) {
+                    startScreen.style.display = 'none';
+                    settingsModal.classList.add('show');
+                }
+                
+                // Initial UI update
+                updateUI();
+            }
+            
+            // Call initialize function at startup
+            initializeGame();
+            
+            // Initial UI update
+            updateUI();
+        });
+    </script>
+</body>
+</html>
