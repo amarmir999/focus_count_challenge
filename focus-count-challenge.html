@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Count Challenge</title>
+    <title>אתגר ספירת מיקוד</title>
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -31,6 +31,7 @@
             min-height: 100vh;
             padding: 20px;
             overflow: hidden;
+            direction: rtl; /* Add RTL direction */
         }
         
         .game-container {
@@ -393,11 +394,13 @@
         }
         
         .settings-button {
-            right: 20px;
+            left: 20px;
+            right: auto;
         }
         
         .restart-button {
-            right: 100px; /* Increased distance between buttons */
+            left: 100px; /* Changed from right to left */
+            right: auto;
         }
         
         .restart-button:hover, .settings-button:hover {
@@ -416,15 +419,16 @@
             color: var(--primary-color);
             text-align: center;
             width: 100%;
-            left: 0;
+            right: 0; /* Changed from left */
+            left: auto;
         }
         
         .settings-button::after {
-            content: "Settings";
+            content: "";
         }
         
         .restart-button::after {
-            content: "Restart";
+            content: "";
         }
         
         .settings-modal {
@@ -490,25 +494,25 @@
 </head>
 <body>
     <div class="header">
-        <h1 class="title">Focus Count Challenge</h1>
-        <p class="subtitle">Keep your eyes on the center dot. Count the fingers that appear.</p>
+        <h1 class="title">אתגר ספירת מיקוד</h1>
+        <p class="subtitle">שמור על העיניים ממוקדות בנקודה המרכזית. ספור את האצבעות שמופיעות.</p>
     </div>
     
     <div class="stats-container">
         <div class="stat">
-            <div class="stat-label">LEVEL</div>
+            <div class="stat-label">שלב</div>
             <div class="stat-value" id="level-display">1</div>
         </div>
         <div class="stat">
-            <div class="stat-label">SCORE</div>
+            <div class="stat-label">ניקוד</div>
             <div class="stat-value" id="score-display">0</div>
         </div>
         <div class="stat">
-            <div class="stat-label">ACCURACY</div>
+            <div class="stat-label">דיוק</div>
             <div class="stat-value" id="accuracy-display">0%</div>
         </div>
         <div class="stat">
-            <div class="stat-label">STREAK</div>
+            <div class="stat-label">רצף</div>
             <div class="stat-value" id="streak-display">0</div>
         </div>
     </div>
@@ -518,7 +522,7 @@
     </div>
     
     <div class="game-container" id="game-container">
-        <div class="level-indicator" id="current-level">Level 1</div>
+        <div class="right-indicator" id="current-level">שלב 1</div>
         <div class="fixation-point" id="fixation-point"></div>
         
         <div class="finger-container" id="left-fingers" style="top: 40%; left: 20%; transform: translateX(-50%);">
@@ -530,7 +534,7 @@
         </div>
         
         <div class="input-container" id="input-container">
-            <div class="prompt">How many fingers did you see?</div>
+            <div class="prompt">כמה אצבעות ראית?</div>
             <div class="button-group">
                 <button class="number-button" data-value="1">1</button>
                 <button class="number-button" data-value="2">2</button>
@@ -549,80 +553,80 @@
         
         <div class="achievement" id="achievement"></div>
         
-        <button class="restart-button" id="restart-button" title="Restart Game">🔄</button>
-        <button class="settings-button" id="settings-button" title="Settings">⚙️</button>
+        <button class="restart-button" id="restart-button" title="התחל מחדש">🔄</button>
+        <button class="settings-button" id="settings-button" title="הגדרות">⚙️</button>
         
         <div class="game-start-screen" id="start-screen">
-            <h2>Welcome to Focus Count Challenge</h2>
+            <h2>ברוכים הבאים לאתגר ספירת מיקוד</h2>
             <div class="instructions">
-                <p>This game helps improve your visual fixation and peripheral awareness.</p>
-                <p>Keep your eyes focused on the <span class="instruction-highlight">central dot</span> at all times.</p>
-                <p>Count the fingers that briefly appear on the left or right side.</p>
-                <p>In higher levels, fingers may appear on both sides simultaneously (up to 10 total).</p>
-                <p>Enter the correct number to score points and advance.</p>
+                <p>משחק זה עוזר לשפר את המיקוד החזותי שלך ואת המודעות ההיקפית.</p>
+                <p>שמור על העיניים ממוקדות על <span class="instruction-highlight">הנקודה המרכזית</span> בכל עת.</p>
+                <p>ספור את האצבעות שמופיעות לזמן קצר בצד שמאל או ימין.</p>
+                <p>בשלבים גבוהים יותר, אצבעות עשויות להופיע בשני הצדדים בו-זמנית (עד 10 בסך הכל).</p>
+                <p>הזן את המספר הנכון כדי לצבור נקודות ולהתקדם.</p>
             </div>
-            <button class="start-button" id="start-button">Start Game</button>
+            <button class="start-button" id="start-button">התחל משחק</button>
         </div>
         
         <div class="game-start-screen" id="level-complete-screen" style="display: none;">
-            <h2>Level Complete!</h2>
+            <h2>השלב הושלם!</h2>
             <div class="instructions">
-                <p>Great job! You've completed Level <span id="completed-level">1</span>.</p>
-                <p>The next level will be slightly more challenging.</p>
-                <p>Remember to keep your eyes on the center dot at all times.</p>
+                <p>כל הכבוד! השלמת את שלב <span id="completed-level">1</span>.</p>
+                <p>השלב הבא יהיה מאתגר מעט יותר.</p>
+                <p>זכור לשמור את העיניים על הנקודה המרכזית בכל עת.</p>
             </div>
-            <button class="next-level-button" id="next-level-button">Continue to Next Level</button>
+            <button class="next-level-button" id="next-level-button">המשך לשלב הבא</button>
         </div>
         
         <div class="settings-modal" id="settings-modal">
-            <h2 class="settings-title">Game Settings</h2>
+            <h2 class="settings-title">הגדרות משחק</h2>
             
             <div class="settings-group">
                 <label class="settings-label">
-                    Stimulus Duration: <span class="settings-value" id="duration-value">600</span>ms
+                    משך הצגת הגירוי: <span class="settings-value" id="duration-value">600</span> מ"ש
                 </label>
                 <input type="range" class="settings-range" id="duration-setting" min="300" max="1000" step="50" value="600">
             </div>
             
             <div class="settings-group">
                 <label class="settings-label">
-                    Distractions: <span class="settings-value" id="distraction-value">Medium</span>
+                    הסחות דעת: <span class="settings-value" id="distraction-value">בינוני</span>
                 </label>
                 <input type="range" class="settings-range" id="distraction-setting" min="0" max="2" step="1" value="1">
             </div>
             
             <div class="settings-group">
                 <label class="settings-label">
-                    Finger Distance: <span class="settings-value" id="distance-value">Medium</span>
+                    מרחק אצבעות: <span class="settings-value" id="distance-value">בינוני</span>
                 </label>
                 <input type="range" class="settings-range" id="distance-setting" min="0" max="2" step="1" value="1">
             </div>
             
             <div class="settings-group">
                 <label class="settings-label">
-                    Finger Position: <span class="settings-value" id="position-value">Both</span>
+                    מיקום אצבעות: <span class="settings-value" id="position-value">שני הצדדים</span>
                 </label>
                 <input type="range" class="settings-range" id="position-setting" min="0" max="2" step="1" value="2">
             </div>
             
             <div class="settings-group">
                 <label class="settings-label">
-                    Fixation Point: <span class="settings-value" id="anchor-value">Regular</span>
+                    נקודת מיקוד: <span class="settings-value" id="anchor-value">רגיל</span>
                 </label>
                 <input type="range" class="settings-range" id="anchor-setting" min="0" max="1" step="1" value="0">
             </div>
             
             <div class="settings-group">
                 <label class="settings-label">
-                    Sound Effects: 
+                    אפקטים קוליים:
                 </label>
                 <div style="display: flex; align-items: center;">
                     <input type="checkbox" id="sound-setting" checked>
-                    <label for="sound-setting" style="margin-left: 8px;">Enable sounds</label>
+                    <label for="sound-setting" style="margin-right: 8px;">הפעל צלילים</label>
                 </div>
             </div>
             
-            <button class="close-settings" id="close-settings">Save Settings</button>
+            <button class="close-settings" id="close-settings">שמור הגדרות</button>
         </div>
         
         <!-- Audio elements -->
@@ -827,22 +831,22 @@
             });
             
             distractionSetting.addEventListener('input', function() {
-                const levels = ['Low', 'Medium', 'High'];
+                const levels = ['נמוך', 'בינוני', 'גבוה'];
                 distractionValue.textContent = levels[this.value];
             });
             
             distanceSetting.addEventListener('input', function() {
-                const levels = ['Close', 'Medium', 'Far'];
+                const levels = ['קרוב', 'בינוני', 'רחוק'];
                 distanceValue.textContent = levels[this.value];
             });
             
             positionSetting.addEventListener('input', function() {
-                const positions = ['Left Only', 'Right Only', 'Both'];
+                const positions = ['שמאל בלבד', 'ימין בלבד', 'שני הצדדים'];
                 positionValue.textContent = positions[this.value];
             });
             
             anchorSetting.addEventListener('input', function() {
-                const types = ['Regular', 'Visual Anchor'];
+                const types = ['רגיל', 'עוגן חזותי'];
                 anchorValue.textContent = types[this.value];
             });
             
@@ -873,7 +877,7 @@
             // Restart button functionality
             restartButton.addEventListener('click', function() {
                 // Ask for confirmation before restarting
-                if (gameState.isPlaying && !confirm('Are you sure you want to restart the game? Your progress will be lost.')) {
+                if (gameState.isPlaying && !confirm('האם אתה בטוח שברצונך להתחיל מחדש את המשחק? ההתקדמות שלך תאבד.')) {
                     return;
                 }
                 
@@ -929,7 +933,7 @@
                     // Level complete
                     completedLevelDisplay.textContent = gameState.level;
                     levelCompleteScreen.style.display = 'flex';
-                    showAchievement('Level ' + gameState.level + ' Complete!');
+                    showAchievement('שלב ' + gameState.level + ' הושלם!');
                     gameState.currentPhase = 'waiting';
                     return;
                 }
@@ -1101,8 +1105,8 @@
             // Show feedback based on correctness
             function showFeedback(isCorrect) {
                 feedback.textContent = isCorrect ? 
-                    "Correct! " + currentRoundData.totalCount + " fingers." : 
-                    "Incorrect. There were " + currentRoundData.totalCount + " fingers.";
+                    "נכון! " + currentRoundData.totalCount + " אצבעות." : 
+                    "לא נכון. היו " + currentRoundData.totalCount + " אצבעות.";
                 
                 feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
                 
@@ -1159,7 +1163,7 @@
                 accuracyDisplay.textContent = accuracy + '%';
                 
                 streakDisplay.textContent = gameState.streak;
-                currentLevelDisplay.textContent = 'Level ' + gameState.level;
+                currentLevelDisplay.textContent = 'שלב ' + gameState.level;
             }
             
             // Update progress bar
@@ -1198,12 +1202,12 @@
             function checkForAchievements() {
                 if (gameState.streak === 3 && !gameState.achievements.streak3) {
                     gameState.achievements.streak3 = true;
-                    showAchievement('Achievement: 3 Correct in a Row!');
+                    showAchievement('הישג: 3 נכונות ברצף!');
                 }
                 
                 if (gameState.streak === 5 && !gameState.achievements.streak5) {
                     gameState.achievements.streak5 = true;
-                    showAchievement('Achievement: 5 Correct in a Row!');
+                    showAchievement('הישג: 5 נכונות ברצף!');
                 }
                 
                 // Perfect round achievement - checked at end of level
@@ -1211,7 +1215,7 @@
                     gameState.correctAttempts === gameState.totalAttempts &&
                     !gameState.achievements.perfect) {
                     gameState.achievements.perfect = true;
-                    showAchievement('Achievement: Perfect Round!');
+                    showAchievement('הישג: סיבוב מושלם!');
                 }
             }
             
@@ -1357,16 +1361,16 @@
                 // Set initial values for settings
                 durationValue.textContent = settings.stimulusDuration;
                 
-                const distractionLevels = ['Low', 'Medium', 'High'];
+                const distractionLevels = ['נמוך', 'בינוני', 'גבוה'];
                 distractionValue.textContent = distractionLevels[settings.distractionLevel];
                 
-                const distanceLevels = ['Close', 'Medium', 'Far'];
+                const distanceLevels = ['קרוב', 'בינוני', 'רחוק'];
                 distanceValue.textContent = distanceLevels[settings.fingerDistance];
                 
-                const positionOptions = ['Left Only', 'Right Only', 'Both'];
+                const positionOptions = ['שמאל בלבד', 'ימין בלבד', 'שני הצדדים'];
                 positionValue.textContent = positionOptions[settings.fingerPosition];
                 
-                const anchorTypes = ['Regular', 'Visual Anchor'];
+                const anchorTypes = ['רגיל', 'עוגן חזותי'];
                 anchorValue.textContent = anchorTypes[settings.visualAnchorType];
                 
                 // Apply visual anchor setting
